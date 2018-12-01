@@ -1,4 +1,4 @@
-# A Star Search Algortithm
+# A Star graph search Algortithm
 
 ## Implementations 
 - Python
