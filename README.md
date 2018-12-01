@@ -1,8 +1,8 @@
 # A Star graph search Algortithm
 
 ## Implementations 
-- Python
-- C++11
+- Python (2.7) - Naitve
+- C++11 - Naitve
 
 ## Instructions
 
