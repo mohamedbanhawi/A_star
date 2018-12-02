@@ -121,7 +121,7 @@ bool node::operator==(const node& n) const
 
 int64_t node::CostTo(const node& n) const
 {
-    return abs(x-n.x) + abs(y-n.y);
+    return (abs(x-n.x) + abs(y-n.y));
 }
 
 void node::predict(node& NextNode, 
@@ -136,7 +136,10 @@ std::string node::AsString()
     std::stringstream ss;
     ss << "("<< x << ","<< y<<")" << 
         ", State: "<< state <<
-        ", Closed "<< int(closed);
+        ", Closed "<< int(closed) <<
+        ", f: " << f << 
+        "= g: " << g << 
+        "+ h: " << h;
     return ss.str();
 }
 
@@ -176,26 +179,32 @@ bool a_star::Init(map& input_map)
             if (input_map[row][col] == 1)
             {
                 _Start_node = grid_row.back();
+
             }
             else if (input_map[row][col] == 2)
             {
                 _Goal_node = grid_row.back();
+                
             }
         }
         std::cout << std::endl;
         _grid.push_back(grid_row);
     }
-    _grid_y_max = row; // rows
-    _grid_x_max = col; // columns
+    std::cout << std::endl;
+    std::cout << "_Start_node" << _Start_node.AsString() << std::endl;
+    std::cout << "_Goal_node " << _Goal_node.AsString() << std::endl;
+    _grid_y_max = col; // rows
+    _grid_x_max = row; // columns
 
     // estimate heuristic function
     // create grid
-    for (int row = 0; row < _grid_y_max; row++)
+    for (int row = 0; row < _grid_x_max; row++)
     {   
 
-        for (int col = 0; col < _grid_x_max; col++)
+        for (int col = 0; col < _grid_y_max; col++)
         {   
             _grid[row][col].h = _grid[row][col].CostTo(_Goal_node);
+            _grid[row][col].f = _grid[row][col].g + _grid[row][col].h;
         }
     }
 
@@ -243,7 +252,8 @@ bool a_star::Search()
     {
         Current = _open.top(); // lowest cost = highest priority
         std::cout << "current" << Current.AsString()<< std::endl;
-
+        ShowCost(Current);
+        ShowGrid(Current);
         _open.pop(); // remove from queue
 
         Current.order = count;
@@ -269,7 +279,7 @@ bool a_star::Search()
                     if (NextNode.Expand()) // expandable node
                     {   
                         _grid[NextNode.x][NextNode.y].g = Current.g + 1;
-                        _grid[NextNode.x][NextNode.y].f = _grid[NextNode.x][NextNode.y].f  + NextNode.g;
+                        _grid[NextNode.x][NextNode.y].f = _grid[NextNode.x][NextNode.y].h  + _grid[NextNode.x][NextNode.y].g;
                         _grid[NextNode.x][NextNode.y].action_here = _actions[a];
                         _grid[NextNode.x][NextNode.y].closed = true;
                         _open.push(_grid[NextNode.x][NextNode.y]);
@@ -291,22 +301,111 @@ if (_goal_reached)
 return 0; // fail
 }
 
-void a_star::ShowGrid()
+void a_star::ShowGrid() const
 {    
 
     // width
     const int w = 4;
 
-    for (int row = 0; row < _grid_y_max; row++)
+    for (int row = 0; row < _grid_x_max; row++)
     {   
 
-        for (int col = 0; col < _grid_x_max; col++)
+        for (int col = 0; col < _grid_y_max; col++)
         {   
             node Node = _grid[row][col];
             std::cout << std::setw(w) << Node.order;
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
+}
+
+void a_star::ShowGrid(const node& current) const
+{    
+
+    // width
+    const int w = 4;
+
+    for (int row = 0; row < _grid_x_max; row++)
+    {   
+
+        for (int col = 0; col < _grid_y_max; col++)
+        {   
+            if (_grid[row][col] == current)
+            {
+                std::cout << "  **";
+            }
+            else if (_grid[row][col] == _Goal_node)
+            {
+                std::cout << "  xx";
+            }
+            else if (_grid[row][col] == _Start_node)
+            {
+                std::cout << "  oo";
+            }
+            else
+            {
+                node Node = _grid[row][col];
+                std::cout << std::setw(w) << Node.order;
+            }
+
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void a_star::ShowCost(const node& current) const
+{    
+
+    // width
+    const int w = 4;
+
+    for (int row = 0; row < _grid_x_max; row++)
+    {   
+
+        for (int col = 0; col < _grid_y_max; col++)
+        {   
+            if (_grid[row][col] == current)
+            {
+                std::cout << "  **";
+            }
+            else if (_grid[row][col] == _Goal_node)
+            {
+                std::cout << "  xx";
+            }
+            else if (_grid[row][col] == _Start_node)
+            {
+                std::cout << "  oo";
+            }
+            else
+            {
+                node Node = _grid[row][col];
+                std::cout << std::setw(w) << Node.f;
+            }
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void a_star::ShowCost() const
+{    
+
+    // width
+    const int w = 4;
+
+    for (int row = 0; row < _grid_x_max; row++)
+    {   
+
+        for (int col = 0; col < _grid_y_max; col++)
+        {   
+            node Node = _grid[row][col];
+            std::cout << std::setw(w) << Node.f;
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 bool a_star::UpdatePath() 

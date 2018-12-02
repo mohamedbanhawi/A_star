@@ -157,7 +157,10 @@ class a_star {
     /*
     * print expansion
     */
-    void ShowGrid();
+    void ShowGrid() const;
+    void ShowGrid(const node&) const;
+    void ShowCost() const;
+    void ShowCost(const node&) const;
 };
 
 #endif /* ASTAR */
